@@ -241,17 +241,15 @@ func (watcher *AbstractWatcher) LatestSyncedBlockNum() uint64 {
 // we use this method to make sure we only do the work we need
 func (watcher *AbstractWatcher) needReceipt(tx sdk.Transaction) bool {
 	plugins := watcher.TxReceiptPlugins
-
 	for _, p := range plugins {
-		if filterPlugin, ok := p.(plugin.TxReceiptPluginWithFilter); ok {
+		if filterPlugin, ok := p.(*plugin.TxReceiptPluginWithFilter); ok {
 			if filterPlugin.NeedReceipt(tx) {
 				return true
 			}
+		} else {
+			// exist global tx-receipt listener
+			return true
 		}
-		//else {
-		//	// exist global tx-receipt listener
-		//	return true
-		//}
 	}
 
 	return false

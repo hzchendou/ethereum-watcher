@@ -8,6 +8,7 @@ import (
 	"github.com/HydroProtocol/nights-watch/structs"
 	"github.com/labstack/gommon/log"
 	"github.com/shopspring/decimal"
+	"github.com/sirupsen/logrus"
 	"testing"
 )
 
@@ -18,13 +19,16 @@ func TestTxReceiptPlugin(t *testing.T) {
 	api := "https://bsc-dataseed4.binance.org"
 	w := NewHttpBasedEthWatcher(context.Background(), api)
 
-	w.RegisterTxReceiptPlugin(plugin.NewTxReceiptPlugin(func(txAndReceipt *structs.RemovableTxAndReceipt) {
-		if txAndReceipt.IsRemoved {
-			fmt.Println("Removed >>", txAndReceipt.Tx.GetHash(), txAndReceipt.Receipt.GetTxIndex())
-		} else {
-			fmt.Println("Adding >>", txAndReceipt.Tx.GetHash(), txAndReceipt.Receipt.GetTxIndex())
+	p := plugin.NewTxReceiptPluginWithFilter(func(tx *structs.RemovableTxAndReceipt) {
+		logrus.Infoln("Skip useless transaction ", tx.Tx.GetHash())
+	}, func(transaction sdk.Transaction) bool {
+		logrus.Infoln("filter transaction >> ", transaction.GetBlockNumber(), transaction.GetHash())
+		if transaction.GetBlockNumber() == 14704340 {
+			return true
 		}
-	}))
+		return false
+	})
+	w.RegisterTxReceiptPlugin(p)
 
 	w.RunTillExitFromBlock(14704336)
 }
