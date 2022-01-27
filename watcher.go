@@ -247,10 +247,11 @@ func (watcher *AbstractWatcher) needReceipt(tx sdk.Transaction) bool {
 			if filterPlugin.NeedReceipt(tx) {
 				return true
 			}
-		} else {
-			// exist global tx-receipt listener
-			return true
 		}
+		//else {
+		//	// exist global tx-receipt listener
+		//	return true
+		//}
 	}
 
 	return false
